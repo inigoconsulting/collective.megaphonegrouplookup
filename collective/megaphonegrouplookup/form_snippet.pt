@@ -1,0 +1,11 @@
+<div>
+<p>Your letter will be sent to:</p>
+<ul>
+   <li tal:repeat="recipient options/recipients">
+      <tal:r replace="recipient/honorific"/>
+      <tal:r replace="recipient/first"/>
+      <tal:r replace="recipient/last"/>
+   </li>
+</ul>
+</div>
+

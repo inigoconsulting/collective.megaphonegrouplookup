@@ -1,0 +1,12 @@
+<configure
+    xmlns="http://namespaces.zope.org/meta">
+
+  <directives namespace="http://namespaces.inigo-tech.com/megaphonegrouplookup">
+    <directive
+      name="group"
+      schema=".meta.IGroupDataSourceDirective"
+      handler=".meta.groupdatasource_handler"
+      />
+   </directives>
+ 
+</configure> 
