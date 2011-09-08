@@ -1,13 +1,13 @@
 from zope.interface import Interface
 from zope import schema
 from zope.component.zcml import adapter, utility
-from cisindia.rajyasabhalookup.lookup import (
+from collective.megaphonegrouplookup.lookup import (
     GroupLookupRecipientSource,
     GroupLookupRecipientSourceRegistration,
     IGroupSetting
 )
 
-from cisindia.rajyasabhalookup.interfaces import IGroupSource
+from collective.megaphonegrouplookup.interfaces import IGroupSource
 
 from collective.megaphone.interfaces import IMegaphone
 from zope.publisher.interfaces.browser import IBrowserRequest
@@ -116,6 +116,7 @@ def groupdatasource_handler(_context, name, json_source, site=None,
     adapter_factory = type(str(name), (GroupLookupRecipientSource,), {
         'name': name,
     })
+
 
     adapter(_context, factory=(adapter_factory,), 
             for_=(IMegaphone, IBrowserRequest),

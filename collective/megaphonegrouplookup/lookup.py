@@ -13,7 +13,7 @@ from Products.CMFCore.utils import getToolByName
 
 from zope.component import getUtility
 
-from cisindia.rajyasabhalookup.interfaces import IGroupSource
+from collective.megaphonegrouplookup.interfaces import IGroupSource
 
 class GroupLookupRecipientSource(object):
     implements(IRecipientSource)
@@ -59,8 +59,13 @@ class GroupLookupRecipientSourceRegistration(object):
 
     @property
     def enabled(self):
-        qi = getToolByName(getSite(), 'portal_quickinstaller')
-        return qi.isProductInstalled('collective.megaphonegrouplookup')
+        if self.site is None:
+            return True
+        else:
+            site = getSite()
+            if site.id == self.site:
+                return True
+        return False
 
     def get_label(self, settings):
         return settings['label']
