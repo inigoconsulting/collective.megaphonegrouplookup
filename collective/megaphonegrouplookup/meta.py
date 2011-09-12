@@ -1,11 +1,9 @@
 from zope.interface import Interface
 from zope import schema
 from zope.component.zcml import adapter, utility
-from collective.megaphonegrouplookup.lookup import (
-    GroupLookupRecipientSource,
-    GroupLookupRecipientSourceRegistration,
-    IGroupSetting
-)
+from collective.megaphonegrouplookup.manager_lookup import LookupRecipientSource as ManagerLRS
+from collective.megaphonegrouplookup.user_lookup import LookupRecipientSource as UserLRS
+from collective.megaphonegrouplookup.common import LookupRecipientSourceRegistration
 
 from collective.megaphonegrouplookup.interfaces import IGroupSource
 
@@ -18,7 +16,7 @@ from zope.schema.vocabulary import SimpleVocabulary
 
 import simplejson
 
-class IGroupDataSourceDirective(Interface):
+class IDataSourceDirective(Interface):
 
     name = schema.TextLine(
         title=u'Name', 
@@ -82,43 +80,113 @@ class IGroupDataSourceDirective(Interface):
         required=False
     )
 
+    form_label = schema.TextLine(
+        title=u'Label in the form',
+        required=False
+    )
 
-def groupdatasource_handler(_context, name, json_source, site=None, 
+
+
+def _register_datasource(_context, 
+                        name, json_source, site,
+                        title, description, 
+                        select_label, select_description,
+                        setting_iface,
+                        adapter_factory,
+                        label_getter=lambda x,y:y['settingsdata']):
+    json_data = simplejson.loads(open(json_source).read())
+
+    utility(_context, name=name, factory=lambda : json_data,
+            provides=IGroupSource)
+    utility_factory = type(str(name), (LookupRecipientSourceRegistration,), {
+        'name': name,
+        'title': title,
+        'description': description,
+        'site': site,
+        'settings_schema': setting_iface, 
+        'get_label': label_getter
+    })
+
+    utility(_context, name=name, factory=utility_factory)
+
+    adapter(_context, factory=(adapter_factory,),
+            for_=(IMegaphone, IBrowserRequest),
+            provides=IRecipientSource,
+            name=name)
+
+
+
+def managerdatasource_handler(_context, name, json_source, site=None, 
                             title=u'Officials by Group',
                             description=u'Looks up officials from a group list',
                             select_label=u'Group',
-                            select_description=u'Please select a group'):
+                            select_description=u'Please select a group',
+                            form_label=u'Your letter will be sent to:'):
+
+    adapter_factory = type(str(name), (ManagerLRS,), {
+        'name': name,
+        'form_label': form_label,
+    })
 
     json_data = simplejson.loads(open(json_source).read())
 
     vocab = SimpleVocabulary.fromItems([
                 (i,i) for i in sorted(json_data.keys())
             ])
+
+
     class ISetting(Interface):
-        label = schema.Choice(
+        settingsdata = schema.Choice(
             title=select_label,
             description=select_description,
             vocabulary=vocab
         )
 
-    utility(_context, name=name, factory=lambda : json_data,
-            provides=IGroupSource)  
-    utility_factory = type(str(name), (GroupLookupRecipientSourceRegistration,), {
+    _register_datasource(_context,
+                        name, json_source, site,
+                        title, description,
+                        select_label, select_description,
+                        ISetting,
+                        adapter_factory)
+
+
+def userdatasource_handler(_context, name, json_source, site=None,
+                            title=u'Officials by Group : User selectible',
+                            description=u'Looks up officials by group, selectible by user',
+                            select_label=u'Groups',
+                            select_description=u'Please select available groups',
+                            form_label=u"Send To"
+                            ):
+
+    adapter_factory = type(str(name), (UserLRS,), {
         'name': name,
-        'title': title,
-        'description': description,
-        'site': site,
-        'settings_schema': ISetting
+        'form_label': form_label
     })
 
-    utility(_context, name=name, factory=utility_factory)
+    json_data = simplejson.loads(open(json_source).read())
 
-    adapter_factory = type(str(name), (GroupLookupRecipientSource,), {
-        'name': name,
-    })
+    vocab = SimpleVocabulary.fromItems([
+                (i,i) for i in sorted(json_data.keys())
+            ])
 
 
-    adapter(_context, factory=(adapter_factory,), 
-            for_=(IMegaphone, IBrowserRequest),
-            provides=IRecipientSource,
-            name=name)
+    class ISetting(Interface):
+        settingsdata = schema.List(
+            title=select_label,
+            description=select_description,
+            value_type=schema.Choice(
+                vocabulary=vocab
+            )
+        )
+
+
+    _register_datasource(_context,
+                        name, json_source, site,
+                        title, description, 
+                        select_label, select_description,
+                        ISetting,
+                        adapter_factory,
+                        label_getter=lambda x,y:','.join(
+                                        y['settingsdata'])
+                        )
+

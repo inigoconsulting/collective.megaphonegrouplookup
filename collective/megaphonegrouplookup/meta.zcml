@@ -4,9 +4,16 @@
   <directives namespace="http://namespaces.inigo-tech.com/megaphonegrouplookup">
     <directive
       name="group"
-      schema=".meta.IGroupDataSourceDirective"
-      handler=".meta.groupdatasource_handler"
+      schema=".meta.IDataSourceDirective"
+      handler=".meta.managerdatasource_handler"
       />
+
+    <directive
+      name="group-user"
+      schema=".meta.IDataSourceDirective"
+      handler=".meta.userdatasource_handler"
+      />
+
    </directives>
  
 </configure> 

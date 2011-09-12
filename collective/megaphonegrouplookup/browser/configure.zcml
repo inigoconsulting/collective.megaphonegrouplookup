@@ -1,0 +1,16 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser">
+
+    <browser:resource
+        name="collective.megaphonegrouplookup.ordered-list.js"
+        file="ordered-list.js"
+        />
+
+    <browser:page
+        name="megaphone_grouplookup_util"
+        for="*"
+        class=".utilview.MegaphoneLookupUtil"
+        permission="zope2.View"/>
+
+</configure>

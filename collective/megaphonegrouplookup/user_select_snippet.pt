@@ -1,0 +1,11 @@
+<div class="field">
+<label class="formQuestion"
+       for="megaphone-group-select" 
+       tal:content="view/form_label">Send to</label>
+
+<select name="megaphone-group-select">
+   <option tal:repeat="group view/available_groups"
+         tal:attributes="value group/value" tal:content="group/label"/>
+</select>
+</div>
+
